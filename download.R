@@ -1,6 +1,11 @@
 rm(list=ls())
+
 if(!file.exists("data"))
   dir.create("data")
+
+if(!file.exists("data/au"))
+  dir.create("data/au")
+
 
 download.file("http://www.asx.com.au/programs/ISIN.xls","data/codes.csv")
 codes=read.delim("data/codes.csv")
@@ -36,6 +41,8 @@ download.history<-function(url,year) {
   }
   rbindlist(result)
 }
+
+l<-download.history("http://www.asxhistoricaldata.com/wp-content/uploads",2010)
 
 for (year in 2009:2014) {
   l<-download.history("http://www.asxhistoricaldata.com/wp-content/uploads",year)
