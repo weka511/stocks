@@ -9,6 +9,11 @@ download.file("http://www.asx.com.au/asx/research/ASXListedCompanies.csv","data/
 companies=read.table("data/ASXListedCompanies.csv",header=TRUE,sep=",",skip=2)
 
 library(data.table)
+
+is.numeric.string<-function(candidate) {
+  suppressWarnings(!is.na(as.numeric(candidate)))
+}
+
 download.history<-function(url,year) {
   result<-list()
   short_file_name<-paste(toString(year),".zip",sep="")
@@ -21,13 +26,20 @@ download.history<-function(url,year) {
   unzip(zip_file_name, exdir=expand_dir)
 
   for (subdir in list.files(expand_dir)) {
-    subsub=file.path(expand_dir,subdir)
-    for (f in list.files(subsub)) {
-      ff=file.path(subsub,f)
-      result[[length(result)+1]]<-fread(ff,sep=",",header=FALSE)
+    if (is.numeric.string(subdir)) {
+      subsub=file.path(expand_dir,subdir)
+      for (f in list.files(subsub)) {
+        ff=file.path(subsub,f)
+        result[[length(result)+1]]<-fread(ff,sep=",",header=FALSE)
+      }
     }
   }
   rbindlist(result)
 }
 
-l<-download.history("http://www.asxhistoricaldata.com/wp-content/uploads",2012)
+for (year in 2009:2014) {
+  l<-download.history("http://www.asxhistoricaldata.com/wp-content/uploads",year)
+  short_file<-paste(toString(year),".csv",sep="")
+  write.table(l,file.path("c:\\temp",short_file),sep=",")
+}
+
