@@ -15,7 +15,10 @@ if(!file.exists("data/au"))
 # download.file("http://www.asx.com.au/asx/research/ASXListedCompanies.csv","data/ASXListedCompanies.csv")
 # companies=read.table("data/ASXListedCompanies.csv",header=TRUE,sep=",",skip=2)
 
-
+index.substring<-function(sub,str) {
+  r<-regexpr(sub,str)
+  r[1]
+}
 
 is.numeric.string<-function(candidate) {
   suppressWarnings(!is.na(as.numeric(candidate)))
@@ -33,7 +36,9 @@ download.history<-function(year,url="http://www.asxhistoricaldata.com/wp-content
   unzip(zip_file_name, exdir=expand_dir)
 
   for (subdir in list.files(expand_dir)) {
-    if (is.numeric.string(subdir)) {
+    pos=index.substring("-",subdir)
+    prefix<-if (pos>0) substring(subdir,1,pos-1) else subdir
+    if (is.numeric.string(prefix)) {
       subsub=file.path(expand_dir,subdir)
       for (f in list.files(subsub)) {
         ff=file.path(subsub,f)
@@ -51,6 +56,13 @@ rename.history.columns<-function(history.data,new.names=c("Code", "Date", "Open"
 
 
 for (year in 2009:2014) {
+  history.data<-download.history(year)
+  rename.history.columns(history.data)
+  short_file<-paste(toString(year),".csv",sep="")
+  write.table(history.data,file.path("data/au",short_file),sep=",")
+}
+
+for (year in c("2007-2008","2005-2006","2003-2004","2000-2002","1997-1999")) {
   history.data<-download.history(year)
   rename.history.columns(history.data)
   short_file<-paste(toString(year),".csv",sep="")
